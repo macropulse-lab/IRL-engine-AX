@@ -385,7 +385,7 @@ mod tests {
     #[test]
     fn single_leaf_returns_itself() {
         let leaf = hex32(0xAB);
-        let root = compute_merkle_root(&[leaf.clone()]);
+        let root = compute_merkle_root(std::slice::from_ref(&leaf));
         assert_eq!(hex::encode(root), leaf);
     }
 
@@ -441,7 +441,7 @@ mod tests {
     fn malformed_leaf_hashed_as_bytes() {
         // A non-hex string should not panic; it gets SHA-256'd as UTF-8.
         let bad = "not-a-hex-hash".to_string();
-        let root = compute_merkle_root(&[bad.clone()]);
+        let root = compute_merkle_root(std::slice::from_ref(&bad));
 
         let mut expected = Sha256::new();
         expected.update(bad.as_bytes());

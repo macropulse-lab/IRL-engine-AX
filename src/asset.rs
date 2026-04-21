@@ -52,7 +52,7 @@ pub fn canonicalize(asset: &str) -> String {
     ALIAS_MAP
         .get()
         .and_then(|m| m.get(asset))
-        .map(|s| s.clone())
+        .map(|s| s.to_owned())
         .unwrap_or_else(|| asset.to_string())
 }
 
@@ -71,6 +71,7 @@ pub fn assets_match(a: &str, b: &str) -> bool {
 mod tests {
     use super::*;
 
+    #[allow(dead_code)]
     fn with_map(raw: &str, f: impl FnOnce()) {
         // Since OnceLock can't be reset, we test canonicalize directly
         // by building a local map inline for unit tests.

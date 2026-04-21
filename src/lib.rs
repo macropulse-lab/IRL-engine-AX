@@ -35,7 +35,7 @@ use axum::{
     extract::DefaultBodyLimit,
     middleware as axum_middleware,
     routing::{delete, get, patch, post},
-    Extension, Json, Router,
+    Extension, Router,
 };
 use heartbeat::HeartbeatValidator;
 use middleware::client_cert::{client_cert_middleware, PeerCertDer};

@@ -86,7 +86,7 @@ async fn build_test_app() -> Option<(axum::Router, sqlx::PgPool)> {
         mtls_dev_certs: false,
     });
 
-    let heartbeat_validator = HeartbeatValidator::new(&config);
+    let heartbeat_validator = HeartbeatValidator::new(&config, &pool).await;
     let mta_client: Arc<dyn MtaClient> = Arc::new(MockMtaClient);
 
     let shadow_mode = match ShadowModeCache::new(pool.clone(), false).await {
@@ -753,7 +753,7 @@ async fn build_test_app_with_kms() -> Option<(axum::Router, sqlx::PgPool)> {
         mtls_dev_certs: false,
     });
 
-    let heartbeat_validator = HeartbeatValidator::new(&config);
+    let heartbeat_validator = HeartbeatValidator::new(&config, &pool).await;
     let mta_client: Arc<dyn MtaClient> = Arc::new(MockMtaClient);
 
     let shadow_mode = match ShadowModeCache::new(pool.clone(), false).await {

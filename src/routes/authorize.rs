@@ -293,6 +293,7 @@ pub async fn authorize(
     })))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_trace(
     snap: &CognitiveSnapshot,
     mta: &crate::mta::MtaState,
