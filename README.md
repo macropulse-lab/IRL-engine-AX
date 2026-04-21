@@ -1,7 +1,10 @@
+[![CI](https://github.com/GabrielGauss/IRL-engine-AX/actions/workflows/ci.yml/badge.svg)](https://github.com/GabrielGauss/IRL-engine-AX/actions/workflows/ci.yml)
 ![version](https://img.shields.io/badge/version-v1.2.0-0a0a0a?style=flat-square)
 ![rust edition](https://img.shields.io/badge/rust-2021_edition-b7410e?style=flat-square&logo=rust)
 ![license](https://img.shields.io/badge/license-MIT-2d6a4f?style=flat-square)
 ![sandbox](https://img.shields.io/badge/sandbox-live-1a7f37?style=flat-square)
+[![PyPI](https://img.shields.io/pypi/v/irl-sdk?style=flat-square&label=irl-sdk%20(python)&color=3776ab)](https://pypi.org/project/irl-sdk/)
+[![npm](https://img.shields.io/npm/v/irl-sdk?style=flat-square&label=irl-sdk%20(npm)&color=cc3534)](https://www.npmjs.com/package/irl-sdk)
 
 # IRL Engine
 
@@ -77,8 +80,8 @@ In `macropulse` mode and `custom` mode with `LAYER2_ENABLED=true`, each authoriz
 The standalone compose file bundles PostgreSQL and a mock MTA. No MacroPulse account or external service is required.
 
 ```bash
-git clone https://github.com/GabrielGauss/irl-engine.git
-cd irl-engine
+git clone https://github.com/GabrielGauss/IRL-engine-AX.git
+cd IRL-engine-AX
 
 docker compose -f docker-compose.standalone.yml up -d
 ```
@@ -276,13 +279,19 @@ IRL is a single Axum 0.7 service backed by PostgreSQL. All components run in-pro
 | Swagger UI | `https://irl.macropulse.live/swagger-ui/` |
 | Public documentation | `https://github.com/GabrielGauss/irl-public-docs` |
 | MacroPulse (MTA source) | `https://macropulse.live` · API: `https://api.macropulse.live` |
-| Python SDK | `https://github.com/GabrielGauss/irl-sdk-python` |
-| TypeScript SDK | `https://github.com/GabrielGauss/irl-sdk-ts` |
+| Python SDK | [`irl-sdk` on PyPI](https://pypi.org/project/irl-sdk/) · [source](https://github.com/GabrielGauss/irl-sdk-python) |
+| TypeScript SDK | [`irl-sdk` on npm](https://www.npmjs.com/package/irl-sdk) · [source](https://github.com/GabrielGauss/irl-sdk-ts) |
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports and feature requests via [GitHub Issues](https://github.com/GabrielGauss/IRL-engine-AX/issues).
 
 ---
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See [LICENSE](LICENSE).
 
 Commercial licensing, enterprise deployment, and custom MTA integration support: hello@macropulse.live

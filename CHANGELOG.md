@@ -67,6 +67,6 @@ Follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Semantic V
 - **Docker Compose** — standalone stack (IRL Engine + PostgreSQL 16)
 - **Database migrations** — 10 SQL migration files under `migrations/`
 
-[1.2.0]: https://github.com/GabrielGauss/irl-engine/releases/tag/v1.2.0
-[1.1.0]: https://github.com/GabrielGauss/irl-engine/releases/tag/v1.1.0
-[1.0.0]: https://github.com/GabrielGauss/irl-engine/releases/tag/v1.0.0
+[1.2.0]: https://github.com/GabrielGauss/IRL-engine-AX/releases/tag/v1.2.0
+[1.1.0]: https://github.com/GabrielGauss/IRL-engine-AX/releases/tag/v1.1.0
+[1.0.0]: https://github.com/GabrielGauss/IRL-engine-AX/releases/tag/v1.0.0
