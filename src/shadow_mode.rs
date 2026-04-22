@@ -30,11 +30,10 @@ impl ShadowModeCache {
     /// uses its `value_bool`. If absent, inserts a seed row with `env_default`
     /// and uses that value.
     pub async fn new(pool: PgPool, env_default: bool) -> Result<Arc<Self>, AppError> {
-        let row: Option<(Option<bool>,)> = sqlx::query_as(
-            "SELECT value_bool FROM irl.system_config WHERE key = 'shadow_mode'",
-        )
-        .fetch_optional(&pool)
-        .await?;
+        let row: Option<(Option<bool>,)> =
+            sqlx::query_as("SELECT value_bool FROM irl.system_config WHERE key = 'shadow_mode'")
+                .fetch_optional(&pool)
+                .await?;
 
         let current = match row {
             Some((Some(v),)) => v,
@@ -95,11 +94,10 @@ impl ShadowModeCache {
     ///
     /// Called by the background refresh loop every 30 s.
     pub async fn refresh(&self) -> Result<(), AppError> {
-        let row: Option<(Option<bool>,)> = sqlx::query_as(
-            "SELECT value_bool FROM irl.system_config WHERE key = 'shadow_mode'",
-        )
-        .fetch_optional(&self.pool)
-        .await?;
+        let row: Option<(Option<bool>,)> =
+            sqlx::query_as("SELECT value_bool FROM irl.system_config WHERE key = 'shadow_mode'")
+                .fetch_optional(&self.pool)
+                .await?;
 
         if let Some((Some(v),)) = row {
             self.value.store(v, Ordering::Release);

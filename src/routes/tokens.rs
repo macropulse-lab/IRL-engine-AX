@@ -115,12 +115,10 @@ pub async fn token_revoke(
         }
     };
 
-    sqlx::query(
-        "UPDATE irl.api_tokens SET status = 'revoked' WHERE token_hash = $1",
-    )
-    .bind(&full_hash)
-    .execute(&state.pool)
-    .await?;
+    sqlx::query("UPDATE irl.api_tokens SET status = 'revoked' WHERE token_hash = $1")
+        .bind(&full_hash)
+        .execute(&state.pool)
+        .await?;
 
     // Refresh cache so revocation takes effect immediately.
     state.token_manager.refresh_cache().await?;

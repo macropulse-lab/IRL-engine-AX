@@ -154,7 +154,16 @@ pub async fn audit_log_query(
         .into_iter()
         .take(limit as usize)
         .map(
-            |(id, operator_id, action, target_type, target_id, details_json, ip_address, created_at)| {
+            |(
+                id,
+                operator_id,
+                action,
+                target_type,
+                target_id,
+                details_json,
+                ip_address,
+                created_at,
+            )| {
                 serde_json::json!({
                     "id": id,
                     "operator_id": operator_id,
@@ -170,7 +179,9 @@ pub async fn audit_log_query(
         .collect();
 
     let next_cursor = if has_more {
-        entries.last().and_then(|e| e["id"].as_str().map(String::from))
+        entries
+            .last()
+            .and_then(|e| e["id"].as_str().map(String::from))
     } else {
         None
     };
@@ -200,20 +211,14 @@ pub async fn gdpr_erase_handler(
 ) -> Result<Json<serde_json::Value>, AppError> {
     let gdpr_request_id = Uuid::new_v4();
 
-    let key_provider = state
-        .key_provider
-        .as_deref()
-        .ok_or_else(|| AppError::Encryption(
+    let key_provider = state.key_provider.as_deref().ok_or_else(|| {
+        AppError::Encryption(
             "KMS provider required for GDPR erasure — configure KMS_PROVIDER".into(),
-        ))?;
+        )
+    })?;
 
-    let erased_count = crate::gdpr::gdpr_erase_agent(
-        &state.pool,
-        agent_id,
-        gdpr_request_id,
-        key_provider,
-    )
-    .await?;
+    let erased_count =
+        crate::gdpr::gdpr_erase_agent(&state.pool, agent_id, gdpr_request_id, key_provider).await?;
 
     crate::audit::insert_audit_log(
         &state.pool,

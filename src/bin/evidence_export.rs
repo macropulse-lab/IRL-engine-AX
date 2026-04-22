@@ -36,15 +36,24 @@ fn parse_args() -> Result<Args> {
         match args[i].as_str() {
             "--from" => {
                 i += 1;
-                from_str = args.get(i).cloned().context("--from requires a date argument")?;
+                from_str = args
+                    .get(i)
+                    .cloned()
+                    .context("--from requires a date argument")?;
             }
             "--to" => {
                 i += 1;
-                to_str = args.get(i).cloned().context("--to requires a date argument")?;
+                to_str = args
+                    .get(i)
+                    .cloned()
+                    .context("--to requires a date argument")?;
             }
             "--out" => {
                 i += 1;
-                out = args.get(i).cloned().context("--out requires a path argument")?;
+                out = args
+                    .get(i)
+                    .cloned()
+                    .context("--out requires a path argument")?;
             }
             _ => {}
         }
@@ -65,7 +74,12 @@ fn parse_args() -> Result<Args> {
     let database_url =
         std::env::var("DATABASE_URL").context("DATABASE_URL environment variable not set")?;
 
-    Ok(Args { from, to, out, database_url })
+    Ok(Args {
+        from,
+        to,
+        out,
+        database_url,
+    })
 }
 
 #[tokio::main]
@@ -73,7 +87,11 @@ async fn main() -> Result<()> {
     let args = parse_args()?;
 
     println!("IRL Engine — SOC 2 Evidence Export");
-    println!("  Period : {} → {}", args.from.format("%Y-%m-%d"), args.to.format("%Y-%m-%d"));
+    println!(
+        "  Period : {} → {}",
+        args.from.format("%Y-%m-%d"),
+        args.to.format("%Y-%m-%d")
+    );
     println!("  Output : {}", args.out);
 
     let pool = sqlx::postgres::PgPoolOptions::new()
@@ -91,8 +109,8 @@ async fn main() -> Result<()> {
     let file = std::fs::File::create(&args.out)
         .with_context(|| format!("Cannot create output file '{}'", args.out))?;
     let mut zip = zip::ZipWriter::new(file);
-    let options = zip::write::FileOptions::default()
-        .compression_method(zip::CompressionMethod::Deflated);
+    let options =
+        zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
 
     zip.start_file("audit_log.csv", options)?;
     zip.write_all(audit_csv.as_bytes())?;
@@ -124,9 +142,15 @@ async fn export_audit_log(
     from: DateTime<Utc>,
     to: DateTime<Utc>,
 ) -> Result<String> {
-    let rows: Vec<(String, String, String, Option<String>, Option<String>, Option<String>)> =
-        sqlx::query_as(
-            r#"
+    let rows: Vec<(
+        String,
+        String,
+        String,
+        Option<String>,
+        Option<String>,
+        Option<String>,
+    )> = sqlx::query_as(
+        r#"
             SELECT
                 created_at::text,
                 operator_id,
@@ -138,12 +162,12 @@ async fn export_audit_log(
             WHERE created_at BETWEEN $1 AND $2
             ORDER BY created_at ASC
             "#,
-        )
-        .bind(from)
-        .bind(to)
-        .fetch_all(pool)
-        .await
-        .context("Failed to query audit log")?;
+    )
+    .bind(from)
+    .bind(to)
+    .fetch_all(pool)
+    .await
+    .context("Failed to query audit log")?;
 
     let mut csv = String::from("created_at,operator_id,action,target_type,target_id,ip_address\n");
     for (ts, op, action, ttype, tid, ip) in rows {
@@ -207,7 +231,12 @@ async fn export_policy_decisions(
 
     let mut csv = String::from("mta_version,policy_result,count\n");
     for (ver, result, count) in rows {
-        csv.push_str(&format!("{},{},{}\n", ver.unwrap_or_default(), result, count));
+        csv.push_str(&format!(
+            "{},{},{}\n",
+            ver.unwrap_or_default(),
+            result,
+            count
+        ));
     }
     Ok(csv)
 }

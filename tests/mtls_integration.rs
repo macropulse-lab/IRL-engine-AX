@@ -41,7 +41,10 @@ fn test_client_cert_required_config() {
     let key = pem_to_key(&dev.server_key_pem);
 
     let cfg = build_server_config(&ca_der, chain, key, true, true);
-    assert!(cfg.is_ok(), "build_server_config(required=true) should succeed");
+    assert!(
+        cfg.is_ok(),
+        "build_server_config(required=true) should succeed"
+    );
     let server_config = cfg.unwrap();
     assert_eq!(
         server_config.alpn_protocols,
@@ -57,7 +60,11 @@ fn test_valid_client_cert_accepted() {
     let der = client_chain[0].as_ref();
 
     let result = parse_client_cert(der);
-    assert!(result.is_ok(), "CA-signed dev client cert should parse: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "CA-signed dev client cert should parse: {:?}",
+        result.err()
+    );
     let info = result.unwrap();
     assert_eq!(info.cn, "dev-agent-01");
 }
@@ -70,7 +77,9 @@ fn test_extract_cn() {
     use rcgen::{CertificateParams, DnType, KeyPair};
     let key = KeyPair::generate().unwrap();
     let mut params = CertificateParams::default();
-    params.distinguished_name.push(DnType::CommonName, "agent-42");
+    params
+        .distinguished_name
+        .push(DnType::CommonName, "agent-42");
     let cert = params.self_signed(&key).unwrap();
 
     let info = parse_client_cert(cert.der().as_ref()).unwrap();
@@ -148,7 +157,10 @@ fn test_mtls_disabled_config() {
     let key = pem_to_key(&dev.server_key_pem);
 
     let cfg = build_server_config(&ca_der, chain, key, false, false);
-    assert!(cfg.is_ok(), "build_server_config(mtls_enabled=false) should succeed");
+    assert!(
+        cfg.is_ok(),
+        "build_server_config(mtls_enabled=false) should succeed"
+    );
     let server_config = cfg.unwrap();
     assert_eq!(
         server_config.alpn_protocols,
@@ -165,5 +177,8 @@ fn test_mtls_optional_config() {
     let key = pem_to_key(&dev.server_key_pem);
 
     let cfg = build_server_config(&ca_der, chain, key, true, false);
-    assert!(cfg.is_ok(), "optional mTLS (mtls_required=false) should succeed");
+    assert!(
+        cfg.is_ok(),
+        "optional mTLS (mtls_required=false) should succeed"
+    );
 }

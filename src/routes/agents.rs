@@ -70,8 +70,8 @@ pub async fn get_agent(
     Path(agent_id): Path<Uuid>,
 ) -> Result<Json<serde_json::Value>, AppError> {
     let profile = registry::fetch_profile(&state.pool, agent_id).await?;
-    let value = serde_json::to_value(profile)
-        .map_err(|e| AppError::Serialization(e.to_string()))?;
+    let value =
+        serde_json::to_value(profile).map_err(|e| AppError::Serialization(e.to_string()))?;
     Ok(Json(value))
 }
 

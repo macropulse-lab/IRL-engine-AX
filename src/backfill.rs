@@ -112,9 +112,7 @@ pub async fn run_backfill(
                 if registered_key_versions.insert(kv) {
                     db::upsert_kms_key_metadata(pool, kv, provider_name, key_arn_or_path)
                         .await
-                        .with_context(|| {
-                            format!("upsert_kms_key_metadata key_version={kv}")
-                        })?;
+                        .with_context(|| format!("upsert_kms_key_metadata key_version={kv}"))?;
                     tracing::info!(
                         "Backfill: registered kms_key_metadata for key_version={} provider={}",
                         kv,
@@ -160,18 +158,14 @@ async fn encrypt_one_row(
     _key_arn_or_path: &str,
 ) -> anyhow::Result<Option<i32>> {
     // 1. Generate a fresh per-row DEK.
-    let (dek, enc_dek, kv) = key_provider
-        .generate_dek()
-        .await
-        .context("generate_dek")?;
+    let (dek, enc_dek, kv) = key_provider.generate_dek().await.context("generate_dek")?;
 
     // 2. Serialize the current plaintext trace_json to bytes.
     let plaintext_bytes =
         serde_json::to_vec(trace_json).context("serialize trace_json to bytes")?;
 
     // 3. Encrypt.
-    let blob =
-        encryption::encrypt_trace(&plaintext_bytes, &dek).context("encrypt_trace")?;
+    let blob = encryption::encrypt_trace(&plaintext_bytes, &dek).context("encrypt_trace")?;
     // dek (Zeroizing<Vec<u8>>) drops here — memory wiped automatically.
 
     // 4. Wrap ciphertext for JSONB storage.
@@ -263,8 +257,7 @@ mod tests {
         // Now decrypt.
         let dek2 = kms.decrypt_dek(&enc_dek, kv).await.unwrap();
         let ciphertext = encryption::extract_ciphertext_from_jsonb(&wrapped).unwrap();
-        let decrypted_bytes =
-            encryption::decrypt_trace(&ciphertext, &nonce_bytes, &dek2).unwrap();
+        let decrypted_bytes = encryption::decrypt_trace(&ciphertext, &nonce_bytes, &dek2).unwrap();
         let recovered: serde_json::Value = serde_json::from_slice(&decrypted_bytes).unwrap();
 
         assert_eq!(original, recovered);

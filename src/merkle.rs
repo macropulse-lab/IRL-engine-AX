@@ -117,7 +117,10 @@ async fn post_to_opentimestamps(root: &[u8; 32]) -> Result<Vec<u8>, String> {
     for endpoint in OTS_ENDPOINTS {
         match try_ots_endpoint(&client, endpoint, root).await {
             Ok(bytes) => {
-                tracing::info!("OTS receipt received from {endpoint} ({} bytes)", bytes.len());
+                tracing::info!(
+                    "OTS receipt received from {endpoint} ({} bytes)",
+                    bytes.len()
+                );
                 return Ok(bytes);
             }
             Err(e) => {
@@ -174,8 +177,7 @@ async fn run_anchor_cycle(pool: &PgPool) -> Result<(), String> {
     .await
     .map_err(|e| format!("DB error fetching last anchor: {e}"))?;
 
-    let period_start = last_end
-        .unwrap_or_else(|| chrono::DateTime::from_timestamp(0, 0).unwrap());
+    let period_start = last_end.unwrap_or_else(|| chrono::DateTime::from_timestamp(0, 0).unwrap());
     let period_end = chrono::Utc::now();
 
     // Collect reasoning_hash values in (period_start, period_end], ordered by txn_time.
@@ -194,9 +196,7 @@ async fn run_anchor_cycle(pool: &PgPool) -> Result<(), String> {
     let leaf_count = hashes.len() as i32;
 
     if leaf_count == 0 {
-        tracing::debug!(
-            "Merkle anchor: no new traces in ({period_start}, {period_end}], skipping"
-        );
+        tracing::debug!("Merkle anchor: no new traces in ({period_start}, {period_end}], skipping");
         return Ok(());
     }
 
@@ -245,7 +245,11 @@ async fn run_anchor_cycle(pool: &PgPool) -> Result<(), String> {
     tracing::info!(
         "Merkle anchor stored: root={root_hex} leaf_count={leaf_count} \
          ots={}",
-        if ots_error.is_none() { "ok" } else { "missing (see ots_error)" }
+        if ots_error.is_none() {
+            "ok"
+        } else {
+            "missing (see ots_error)"
+        }
     );
 
     Ok(())
@@ -276,7 +280,10 @@ async fn run_ots_upgrade_cycle(pool: &PgPool) -> Result<(), String> {
         return Ok(());
     }
 
-    tracing::info!("OTS upgrade: retrying {} unanchored anchor(s)", failed.len());
+    tracing::info!(
+        "OTS upgrade: retrying {} unanchored anchor(s)",
+        failed.len()
+    );
 
     for (id, root_hex) in failed {
         let root_bytes = match hex::decode(&root_hex) {
@@ -286,7 +293,9 @@ async fn run_ots_upgrade_cycle(pool: &PgPool) -> Result<(), String> {
                 arr
             }
             _ => {
-                tracing::warn!("OTS upgrade: skipping anchor id={id} — invalid root hex '{root_hex}'");
+                tracing::warn!(
+                    "OTS upgrade: skipping anchor id={id} — invalid root hex '{root_hex}'"
+                );
                 continue;
             }
         };

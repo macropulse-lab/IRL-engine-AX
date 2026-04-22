@@ -85,23 +85,21 @@ impl TokenManager {
 
         let mgr = Arc::clone(self);
         tokio::spawn(async move {
-            let _ = sqlx::query(
-                "UPDATE irl.api_tokens SET last_used_at = now() WHERE token_hash = $1",
-            )
-            .bind(&hash)
-            .execute(&mgr.pool)
-            .await;
+            let _ =
+                sqlx::query("UPDATE irl.api_tokens SET last_used_at = now() WHERE token_hash = $1")
+                    .bind(&hash)
+                    .execute(&mgr.pool)
+                    .await;
         });
     }
 
     /// Reload active token hashes from the DB.
     /// Called at startup and by the background refresh task.
     pub async fn refresh_cache(&self) -> Result<(), AppError> {
-        let rows: Vec<(String,)> = sqlx::query_as(
-            "SELECT token_hash FROM irl.api_tokens WHERE status = 'active'",
-        )
-        .fetch_all(&self.pool)
-        .await?;
+        let rows: Vec<(String,)> =
+            sqlx::query_as("SELECT token_hash FROM irl.api_tokens WHERE status = 'active'")
+                .fetch_all(&self.pool)
+                .await?;
 
         self.cache.clear();
         for (hash,) in rows {

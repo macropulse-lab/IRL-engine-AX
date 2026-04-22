@@ -99,7 +99,10 @@ mod tests {
         assert_eq!(AuditAction::AgentRegister.as_str(), "AGENT_REGISTER");
         assert_eq!(AuditAction::AgentSuspend.as_str(), "AGENT_SUSPEND");
         assert_eq!(AuditAction::AgentActivate.as_str(), "AGENT_ACTIVATE");
-        assert_eq!(AuditAction::AgentStatusChange.as_str(), "AGENT_STATUS_CHANGE");
+        assert_eq!(
+            AuditAction::AgentStatusChange.as_str(),
+            "AGENT_STATUS_CHANGE"
+        );
         assert_eq!(AuditAction::TokenIssue.as_str(), "TOKEN_ISSUE");
         assert_eq!(AuditAction::TokenRevoke.as_str(), "TOKEN_REVOKE");
         assert_eq!(AuditAction::ShadowModeChange.as_str(), "SHADOW_MODE_CHANGE");

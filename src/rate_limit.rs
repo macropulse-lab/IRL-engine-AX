@@ -47,7 +47,10 @@ impl RateLimiter {
             .unwrap_or_default()
             .as_secs();
 
-        let mut entry = self.counters.entry(token.to_string()).or_insert((now_sec, 0));
+        let mut entry = self
+            .counters
+            .entry(token.to_string())
+            .or_insert((now_sec, 0));
 
         if entry.0 != now_sec {
             // New second: reset counter.

@@ -3,8 +3,7 @@ use irl_engine::{
     build_router,
     config::{Config, MtaMode, TimeSource},
     heartbeat::HeartbeatValidator,
-    kms,
-    merkle,
+    kms, merkle,
     mta::{MacroPulseMtaClient, MockMtaClient, MtaClient, NullMtaClient},
     shadow_mode::ShadowModeCache,
     token_manager::TokenManager,
@@ -174,8 +173,7 @@ async fn main() -> Result<()> {
 
     // Initialize DB-backed token manager.
     // Syncs env tokens to irl.api_tokens table, loads active hashes into cache.
-    let token_manager =
-        TokenManager::new(pool.clone(), &config.irl_api_tokens).await?;
+    let token_manager = TokenManager::new(pool.clone(), &config.irl_api_tokens).await?;
     tracing::info!(
         "Token manager ready — {} active token(s) loaded from DB",
         config.irl_api_tokens.len()
@@ -210,7 +208,11 @@ async fn main() -> Result<()> {
                     let mut rd = std::io::Cursor::new(pem);
                     certs(&mut rd).collect()
                 };
-                collected.into_iter().next().and_then(|r| r.ok()).map(|c| c.as_ref().to_vec())
+                collected
+                    .into_iter()
+                    .next()
+                    .and_then(|r| r.ok())
+                    .map(|c| c.as_ref().to_vec())
             }
 
             let server_cert_der: Option<Vec<u8>> =
@@ -261,7 +263,7 @@ async fn main() -> Result<()> {
              retention_keep_index   = false, \
              infinite_time_partitions = false, \
              premake                = 3 \
-         WHERE parent_table = 'irl.reasoning_traces'"
+         WHERE parent_table = 'irl.reasoning_traces'",
     )
     .bind(retention_months)
     .execute(&pool)
@@ -318,7 +320,9 @@ async fn main() -> Result<()> {
         use rustls_pemfile::{certs as parse_certs, private_key as parse_key};
         use rustls_pki_types::CertificateDer;
 
-        let (ca_der, cert_chain, key_der) = if config.mtls_dev_certs || config.tls_cert_path.is_none() {
+        let (ca_der, cert_chain, key_der) = if config.mtls_dev_certs
+            || config.tls_cert_path.is_none()
+        {
             tracing::warn!(
                 "MTLS: generating ephemeral dev certs (MTLS_DEV_CERTS=true or TLS_CERT_PATH unset). NOT for production."
             );
@@ -326,28 +330,30 @@ async fn main() -> Result<()> {
             let ca_bytes = dev.ca_cert_pem.as_bytes().to_vec();
             let srv_bytes = dev.server_cert_pem.as_bytes().to_vec();
             let key_bytes = dev.server_key_pem.as_bytes().to_vec();
-            let ca_certs: Vec<CertificateDer<'static>> = parse_certs(&mut ca_bytes.as_slice())
-                .collect::<Result<Vec<_>, _>>()?;
-            let server_certs: Vec<CertificateDer<'static>> = parse_certs(&mut srv_bytes.as_slice())
-                .collect::<Result<Vec<_>, _>>()?;
+            let ca_certs: Vec<CertificateDer<'static>> =
+                parse_certs(&mut ca_bytes.as_slice()).collect::<Result<Vec<_>, _>>()?;
+            let server_certs: Vec<CertificateDer<'static>> =
+                parse_certs(&mut srv_bytes.as_slice()).collect::<Result<Vec<_>, _>>()?;
             let key = parse_key(&mut key_bytes.as_slice())?
                 .ok_or_else(|| anyhow::anyhow!("No private key in dev cert PEM"))?;
             (ca_certs[0].as_ref().to_vec(), server_certs, key)
         } else {
             let cert_path = config.tls_cert_path.as_deref().unwrap();
-            let key_path = config.tls_key_path.as_deref()
-                .ok_or_else(|| anyhow::anyhow!("TLS_KEY_PATH required when TLS_CERT_PATH is set"))?;
-            let ca_path = config.tls_ca_cert_path.as_deref()
-                .ok_or_else(|| anyhow::anyhow!("TLS_CA_CERT_PATH required when MTLS_ENABLED=true"))?;
+            let key_path = config.tls_key_path.as_deref().ok_or_else(|| {
+                anyhow::anyhow!("TLS_KEY_PATH required when TLS_CERT_PATH is set")
+            })?;
+            let ca_path = config.tls_ca_cert_path.as_deref().ok_or_else(|| {
+                anyhow::anyhow!("TLS_CA_CERT_PATH required when MTLS_ENABLED=true")
+            })?;
             let cert_pem = std::fs::read(cert_path)?;
             let key_pem = std::fs::read(key_path)?;
             let ca_pem = std::fs::read(ca_path)?;
-            let server_certs: Vec<CertificateDer<'static>> = parse_certs(&mut cert_pem.as_slice())
-                .collect::<Result<Vec<_>, _>>()?;
+            let server_certs: Vec<CertificateDer<'static>> =
+                parse_certs(&mut cert_pem.as_slice()).collect::<Result<Vec<_>, _>>()?;
             let key = parse_key(&mut key_pem.as_slice())?
                 .ok_or_else(|| anyhow::anyhow!("No private key in {key_path}"))?;
-            let ca_certs: Vec<CertificateDer<'static>> = parse_certs(&mut ca_pem.as_slice())
-                .collect::<Result<Vec<_>, _>>()?;
+            let ca_certs: Vec<CertificateDer<'static>> =
+                parse_certs(&mut ca_pem.as_slice()).collect::<Result<Vec<_>, _>>()?;
             (ca_certs[0].as_ref().to_vec(), server_certs, key)
         };
 

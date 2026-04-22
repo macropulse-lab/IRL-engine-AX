@@ -36,7 +36,13 @@ pub async fn insert_trace(
                 .map_err(|e| AppError::Encryption(e.to_string()))?;
             // dek (Zeroizing<Vec<u8>>) drops here — memory wiped automatically
             let wrapped = crate::encryption::wrap_ciphertext_for_jsonb(&blob.ciphertext);
-            (wrapped, Some(blob.nonce.to_vec()), Some(enc_dek), Some(kv), 1i32)
+            (
+                wrapped,
+                Some(blob.nonce.to_vec()),
+                Some(enc_dek),
+                Some(kv),
+                1i32,
+            )
         } else {
             (trace_json, None, None, None, 0i32)
         };
@@ -160,9 +166,7 @@ async fn decrypt_if_needed(
         0 => Ok(trace_json), // legacy plaintext — return as-is (ENC-04)
         1 => {
             let kms = key_provider.ok_or_else(|| {
-                AppError::Encryption(
-                    "encryption_version=1 but no key_provider configured".into(),
-                )
+                AppError::Encryption("encryption_version=1 but no key_provider configured".into())
             })?;
             let enc_dek = encrypted_dek.ok_or_else(|| {
                 AppError::Encryption("encrypted_dek is NULL for encryption_version=1".into())
@@ -264,8 +268,31 @@ pub async fn get_trace_json(
 pub async fn get_intent_for_binding(
     pool: &PgPool,
     trace_id: Uuid,
-) -> Result<(String, String, String, f64, String, Option<Uuid>, String, String, f64), AppError> {
-    let row: Option<(String, String, String, f64, String, Option<Uuid>, Option<String>, Option<String>, Option<f64>)> = sqlx::query_as(
+) -> Result<
+    (
+        String,
+        String,
+        String,
+        f64,
+        String,
+        Option<Uuid>,
+        String,
+        String,
+        f64,
+    ),
+    AppError,
+> {
+    let row: Option<(
+        String,
+        String,
+        String,
+        f64,
+        String,
+        Option<Uuid>,
+        Option<String>,
+        Option<String>,
+        Option<f64>,
+    )> = sqlx::query_as(
         r#"
         SELECT reasoning_hash, execution_asset, execution_action, execution_quantity::float8,
                verification_status, agent_id,
@@ -280,17 +307,21 @@ pub async fn get_intent_for_binding(
     .fetch_optional(pool)
     .await?;
 
-    row.map(|(rh, asset, action, qty, status, aid, venue, currency, mult)| (
-        rh,
-        asset,
-        action,
-        qty,
-        status,
-        aid,
-        venue.unwrap_or_else(|| "UNKNOWN".to_string()),
-        currency.unwrap_or_else(|| "USD".to_string()),
-        mult.unwrap_or(1.0),
-    ))
+    row.map(
+        |(rh, asset, action, qty, status, aid, venue, currency, mult)| {
+            (
+                rh,
+                asset,
+                action,
+                qty,
+                status,
+                aid,
+                venue.unwrap_or_else(|| "UNKNOWN".to_string()),
+                currency.unwrap_or_else(|| "USD".to_string()),
+                mult.unwrap_or(1.0),
+            )
+        },
+    )
     .ok_or_else(|| AppError::TraceNotFound(trace_id.to_string()))
 }
 
@@ -414,8 +445,7 @@ async fn decrypt_rows_concurrent(
     let sem = Arc::new(Semaphore::new(20));
     let mut handles = Vec::with_capacity(rows.len());
 
-    for (_trace_id, trace_json, trace_nonce, encrypted_dek, key_version, encryption_version) in
-        rows
+    for (_trace_id, trace_json, trace_nonce, encrypted_dek, key_version, encryption_version) in rows
     {
         // Clone all data so each task owns it independently
         let sem = Arc::clone(&sem);
@@ -583,8 +613,7 @@ pub async fn insert_trace_atomic(
     // Serialize concurrent authorize calls for the same agent.
     // The lock is held until the transaction commits or rolls back.
     if let Some(aid) = agent_id {
-        let lock_key =
-            i64::from_le_bytes(aid.as_bytes()[..8].try_into().unwrap_or([0u8; 8]));
+        let lock_key = i64::from_le_bytes(aid.as_bytes()[..8].try_into().unwrap_or([0u8; 8]));
         sqlx::query("SELECT pg_advisory_xact_lock($1)")
             .bind(lock_key)
             .execute(&mut *txn)
@@ -634,7 +663,13 @@ pub async fn insert_trace_atomic(
                 .map_err(|e| AppError::Encryption(e.to_string()))?;
             // dek (Zeroizing<Vec<u8>>) drops here — memory wiped automatically
             let wrapped = crate::encryption::wrap_ciphertext_for_jsonb(&blob.ciphertext);
-            (wrapped, Some(blob.nonce.to_vec()), Some(enc_dek), Some(kv), 1i32)
+            (
+                wrapped,
+                Some(blob.nonce.to_vec()),
+                Some(enc_dek),
+                Some(kv),
+                1i32,
+            )
         } else {
             (trace_json, None, None, None, 0i32)
         };
@@ -806,14 +841,14 @@ pub async fn upsert_position(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::heartbeat::SignedHeartbeat;
     use crate::kms::{KeyProvider, LocalDevProvider};
+    use crate::policy::{PolicyDecision, PolicyResult};
     use crate::snapshot::{
-        AgentBlock, BiTemporalBlock, ExecutionBlock, HeartbeatBlock,
-        IntegrityBlock, MtaBlock, PolicyBlock, ReasoningTrace,
+        AgentBlock, BiTemporalBlock, ExecutionBlock, HeartbeatBlock, IntegrityBlock, MtaBlock,
+        PolicyBlock, ReasoningTrace,
     };
     use crate::snapshot::{CognitiveSnapshot, TradeAction};
-    use crate::policy::{PolicyDecision, PolicyResult};
-    use crate::heartbeat::SignedHeartbeat;
     use chrono::Utc;
 
     fn setup_local_kms() -> LocalDevProvider {
@@ -868,7 +903,11 @@ mod tests {
         }
     }
 
-    fn make_trace(snap: &CognitiveSnapshot, decision: &PolicyDecision, reasoning_hash: &str) -> ReasoningTrace {
+    fn make_trace(
+        snap: &CognitiveSnapshot,
+        decision: &PolicyDecision,
+        reasoning_hash: &str,
+    ) -> ReasoningTrace {
         ReasoningTrace {
             trace_id: snap.trace_id,
             version: "1.0.0",
@@ -930,16 +969,9 @@ mod tests {
     #[tokio::test]
     async fn test_decrypt_if_needed_plaintext_passthrough() {
         let original = serde_json::json!({"foo": "bar", "num": 42});
-        let result = decrypt_if_needed(
-            original.clone(),
-            None,
-            None,
-            None,
-            0,
-            None,
-        )
-        .await
-        .expect("decrypt_if_needed should return Ok for encryption_version=0");
+        let result = decrypt_if_needed(original.clone(), None, None, None, 0, None)
+            .await
+            .expect("decrypt_if_needed should return Ok for encryption_version=0");
         assert_eq!(result, original);
     }
 
@@ -956,10 +988,16 @@ mod tests {
             None,
         )
         .await;
-        assert!(result.is_err(), "must fail when key_provider=None and version=1");
+        assert!(
+            result.is_err(),
+            "must fail when key_provider=None and version=1"
+        );
         match result.unwrap_err() {
             AppError::Encryption(msg) => {
-                assert!(msg.contains("no key_provider configured"), "wrong error: {msg}");
+                assert!(
+                    msg.contains("no key_provider configured"),
+                    "wrong error: {msg}"
+                );
             }
             e => panic!("expected AppError::Encryption, got {e:?}"),
         }
@@ -968,15 +1006,7 @@ mod tests {
     /// Unit test: decrypt_if_needed returns Encryption error for unknown version
     #[tokio::test]
     async fn test_decrypt_if_needed_unknown_version_returns_error() {
-        let result = decrypt_if_needed(
-            serde_json::json!({}),
-            None,
-            None,
-            None,
-            99,
-            None,
-        )
-        .await;
+        let result = decrypt_if_needed(serde_json::json!({}), None, None, None, 99, None).await;
         assert!(result.is_err());
         match result.unwrap_err() {
             AppError::Encryption(msg) => assert!(msg.contains("unknown encryption_version")),
@@ -1091,12 +1121,21 @@ mod tests {
         assert!(nonce.is_some(), "trace_nonce must be non-NULL");
         assert!(enc_dek.is_some(), "encrypted_dek must be non-NULL");
         assert!(key_ver.is_some(), "key_version must be non-NULL");
-        assert_eq!(stored_hash, reasoning_hash, "reasoning_hash must be stored as plaintext");
+        assert_eq!(
+            stored_hash, reasoning_hash,
+            "reasoning_hash must be stored as plaintext"
+        );
         assert_eq!(nonce.unwrap().len(), 12, "nonce must be 12 bytes");
 
         // Stored trace_json should be JSONB wrapper, not raw plaintext
-        assert_eq!(stored_json["v"], 1, "stored trace_json must be JSONB wrapper {{\"v\":1,...}}");
-        assert!(stored_json["data"].is_string(), "stored trace_json must have base64 'data' field");
+        assert_eq!(
+            stored_json["v"], 1,
+            "stored trace_json must be JSONB wrapper {{\"v\":1,...}}"
+        );
+        assert!(
+            stored_json["data"].is_string(),
+            "stored trace_json must have base64 'data' field"
+        );
 
         // Cleanup
         sqlx::query("DELETE FROM irl.reasoning_traces WHERE trace_id = $1")
@@ -1153,9 +1192,18 @@ mod tests {
         .expect("row should exist");
 
         let (enc_version, nonce, enc_dek) = row;
-        assert_eq!(enc_version, 0, "plaintext insert must write encryption_version=0");
-        assert!(nonce.is_none(), "trace_nonce must be NULL for plaintext insert");
-        assert!(enc_dek.is_none(), "encrypted_dek must be NULL for plaintext insert");
+        assert_eq!(
+            enc_version, 0,
+            "plaintext insert must write encryption_version=0"
+        );
+        assert!(
+            nonce.is_none(),
+            "trace_nonce must be NULL for plaintext insert"
+        );
+        assert!(
+            enc_dek.is_none(),
+            "encrypted_dek must be NULL for plaintext insert"
+        );
 
         // Cleanup
         sqlx::query("DELETE FROM irl.reasoning_traces WHERE trace_id = $1")
@@ -1193,37 +1241,58 @@ mod tests {
         let snap_enc = make_snapshot();
         let decision = make_decision();
         let trace_enc = make_trace(&snap_enc, &decision, reasoning_hash);
-        insert_trace_atomic(&pool, &snap_enc, reasoning_hash, &decision, &trace_enc, None, None, Some(&provider), None)
-            .await
-            .unwrap();
+        insert_trace_atomic(
+            &pool,
+            &snap_enc,
+            reasoning_hash,
+            &decision,
+            &trace_enc,
+            None,
+            None,
+            Some(&provider),
+            None,
+        )
+        .await
+        .unwrap();
 
         // Insert plaintext
         let snap_plain = make_snapshot();
         let trace_plain = make_trace(&snap_plain, &decision, reasoning_hash);
-        insert_trace_atomic(&pool, &snap_plain, reasoning_hash, &decision, &trace_plain, None, None, None, None)
-            .await
-            .unwrap();
+        insert_trace_atomic(
+            &pool,
+            &snap_plain,
+            reasoning_hash,
+            &decision,
+            &trace_plain,
+            None,
+            None,
+            None,
+            None,
+        )
+        .await
+        .unwrap();
 
         // Both rows should have the same reasoning_hash
-        let enc_hash: (String,) = sqlx::query_as(
-            "SELECT reasoning_hash FROM irl.reasoning_traces WHERE trace_id = $1",
-        )
-        .bind(snap_enc.trace_id)
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+        let enc_hash: (String,) =
+            sqlx::query_as("SELECT reasoning_hash FROM irl.reasoning_traces WHERE trace_id = $1")
+                .bind(snap_enc.trace_id)
+                .fetch_one(&pool)
+                .await
+                .unwrap();
 
-        let plain_hash: (String,) = sqlx::query_as(
-            "SELECT reasoning_hash FROM irl.reasoning_traces WHERE trace_id = $1",
-        )
-        .bind(snap_plain.trace_id)
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+        let plain_hash: (String,) =
+            sqlx::query_as("SELECT reasoning_hash FROM irl.reasoning_traces WHERE trace_id = $1")
+                .bind(snap_plain.trace_id)
+                .fetch_one(&pool)
+                .await
+                .unwrap();
 
         assert_eq!(enc_hash.0, reasoning_hash);
         assert_eq!(plain_hash.0, reasoning_hash);
-        assert_eq!(enc_hash.0, plain_hash.0, "reasoning_hash must be identical regardless of encryption");
+        assert_eq!(
+            enc_hash.0, plain_hash.0,
+            "reasoning_hash must be identical regardless of encryption"
+        );
 
         // Cleanup
         sqlx::query("DELETE FROM irl.reasoning_traces WHERE trace_id = $1")
@@ -1323,9 +1392,19 @@ mod tests {
         let reasoning_hash = "plaintext_get_trace_hash";
         let trace = make_trace(&snap, &decision, reasoning_hash);
 
-        insert_trace_atomic(&pool, &snap, reasoning_hash, &decision, &trace, None, None, None, None)
-            .await
-            .expect("plaintext insert should succeed");
+        insert_trace_atomic(
+            &pool,
+            &snap,
+            reasoning_hash,
+            &decision,
+            &trace,
+            None,
+            None,
+            None,
+            None,
+        )
+        .await
+        .expect("plaintext insert should succeed");
 
         // get_trace_json with no key_provider should still work for plaintext rows
         let returned = get_trace_json(&pool, snap.trace_id, None)
@@ -1389,7 +1468,10 @@ mod tests {
 
         // Attempt to read without providing a key_provider — must fail
         let result = get_trace_json(&pool, snap.trace_id, None).await;
-        assert!(result.is_err(), "must fail when key_provider=None for encrypted row");
+        assert!(
+            result.is_err(),
+            "must fail when key_provider=None for encrypted row"
+        );
         match result.unwrap_err() {
             AppError::Encryption(_) => {}
             e => panic!("expected AppError::Encryption, got {e:?}"),
@@ -1403,5 +1485,3 @@ mod tests {
             .ok();
     }
 }
-
-

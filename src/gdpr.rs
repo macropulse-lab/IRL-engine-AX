@@ -140,8 +140,8 @@ pub async fn gdpr_erase_agent(
             null_pii_fields(&mut patched);
 
             // c. Serialize to bytes
-            let plaintext_bytes = serde_json::to_vec(&patched)
-                .map_err(|e| AppError::Serialization(e.to_string()))?;
+            let plaintext_bytes =
+                serde_json::to_vec(&patched).map_err(|e| AppError::Serialization(e.to_string()))?;
 
             // d. Generate a fresh DEK (never reuse old nonce — Pitfall 3)
             let (dek, new_enc_dek, new_key_version) = key_provider
@@ -154,8 +154,7 @@ pub async fn gdpr_erase_agent(
                 .map_err(|e| AppError::Encryption(e.to_string()))?;
 
             // f. Wrap ciphertext for JSONB storage
-            let new_trace_json =
-                crate::encryption::wrap_ciphertext_for_jsonb(&blob.ciphertext);
+            let new_trace_json = crate::encryption::wrap_ciphertext_for_jsonb(&blob.ciphertext);
             let new_nonce = blob.nonce.to_vec();
 
             // g. UPDATE — always include txn_time in WHERE for partition pruning (Pitfall 1)
@@ -223,9 +222,8 @@ async fn decrypt_trace_json(
                 .map_err(|e| AppError::Encryption(e.to_string()))?;
             let ciphertext = crate::encryption::extract_ciphertext_from_jsonb(&trace_json)
                 .map_err(|e| AppError::Encryption(e.to_string()))?;
-            let plaintext =
-                crate::encryption::decrypt_trace(&ciphertext, &nonce, &dek)
-                    .map_err(|e| AppError::Encryption(e.to_string()))?;
+            let plaintext = crate::encryption::decrypt_trace(&ciphertext, &nonce, &dek)
+                .map_err(|e| AppError::Encryption(e.to_string()))?;
             serde_json::from_slice(&plaintext).map_err(|e| AppError::Serialization(e.to_string()))
         }
         v => Err(AppError::Encryption(format!(
@@ -277,11 +275,17 @@ mod tests {
         assert_eq!(json["agent"]["agent_id"], serde_json::Value::Null);
         assert_eq!(json["agent"]["latent_fingerprint"], serde_json::Value::Null);
         assert_eq!(json["agent"]["feature_schema_id"], serde_json::Value::Null);
-        assert_eq!(json["execution"]["client_order_id"], serde_json::Value::Null);
+        assert_eq!(
+            json["execution"]["client_order_id"],
+            serde_json::Value::Null
+        );
         assert_eq!(json["execution"]["venue_id"], serde_json::Value::Null);
 
         // Non-PII fields must be unchanged
-        assert_eq!(json["integrity"]["reasoning_hash"], "deadbeef1234567890abcdef");
+        assert_eq!(
+            json["integrity"]["reasoning_hash"],
+            "deadbeef1234567890abcdef"
+        );
         assert_eq!(json["mta"]["regime_id"], 1);
         assert_eq!(json["bitemporal"]["valid_time"], 1234567890000_i64);
         assert_eq!(json["execution"]["asset"], "BTC-PERP");
@@ -313,7 +317,10 @@ mod tests {
         // Should not panic
         null_pii_fields(&mut json);
         // execution.client_order_id inserted as null
-        assert_eq!(json["execution"]["client_order_id"], serde_json::Value::Null);
+        assert_eq!(
+            json["execution"]["client_order_id"],
+            serde_json::Value::Null
+        );
         assert_eq!(json["execution"]["venue_id"], serde_json::Value::Null);
         // agent key still absent (not created by null_pii_fields)
         assert!(json.get("agent").is_none());

@@ -119,7 +119,9 @@ impl AppError {
             AppError::Policy(PolicyError::ModelHashMismatch) => "MODEL_HASH_MISMATCH",
             AppError::Policy(PolicyError::RegimeUnauthorized { .. }) => "REGIME_UNAUTHORIZED",
             AppError::Policy(PolicyError::AgentNotActive) => "AGENT_NOT_ACTIVE",
-            AppError::Policy(PolicyError::MtaPubkeyUnauthorized { .. }) => "MTA_PUBKEY_UNAUTHORIZED",
+            AppError::Policy(PolicyError::MtaPubkeyUnauthorized { .. }) => {
+                "MTA_PUBKEY_UNAUTHORIZED"
+            }
             AppError::Database(_) => "DATABASE_ERROR",
             AppError::Serialization(_) => "SERIALIZATION_ERROR",
             AppError::TraceNotFound(_) => "TRACE_NOT_FOUND",

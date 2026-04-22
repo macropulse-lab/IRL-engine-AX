@@ -22,7 +22,11 @@ pub trait KeyProvider: Send + Sync {
 
     /// Decrypt a stored encrypted DEK back to its 32-byte plaintext.
     /// Returns `Zeroizing<>` — use for AES-GCM, then drop.
-    async fn decrypt_dek(&self, encrypted_dek: &[u8], key_version: i32) -> Result<Zeroizing<Vec<u8>>>;
+    async fn decrypt_dek(
+        &self,
+        encrypted_dek: &[u8],
+        key_version: i32,
+    ) -> Result<Zeroizing<Vec<u8>>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -40,7 +44,11 @@ impl AwsKmsProvider {
     pub async fn new(key_id: String, key_version: i32) -> Self {
         let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
         let client = aws_sdk_kms::Client::new(&sdk_config);
-        Self { client, key_id, key_version }
+        Self {
+            client,
+            key_id,
+            key_version,
+        }
     }
 }
 
@@ -71,7 +79,11 @@ impl KeyProvider for AwsKmsProvider {
         Ok((plaintext_bytes, encrypted_dek, self.key_version))
     }
 
-    async fn decrypt_dek(&self, encrypted_dek: &[u8], _key_version: i32) -> Result<Zeroizing<Vec<u8>>> {
+    async fn decrypt_dek(
+        &self,
+        encrypted_dek: &[u8],
+        _key_version: i32,
+    ) -> Result<Zeroizing<Vec<u8>>> {
         let resp = self
             .client
             .decrypt()
@@ -115,10 +127,15 @@ impl VaultTransitProvider {
             .build()
             .context("Failed to build Vault client settings")?;
 
-        let client = vaultrs::client::VaultClient::new(settings)
-            .context("Failed to create Vault client")?;
+        let client =
+            vaultrs::client::VaultClient::new(settings).context("Failed to create Vault client")?;
 
-        Ok(Self { client, mount, key_name, key_version })
+        Ok(Self {
+            client,
+            mount,
+            key_name,
+            key_version,
+        })
     }
 }
 
@@ -146,7 +163,11 @@ impl KeyProvider for VaultTransitProvider {
         Ok((plaintext_dek, encrypted_dek, self.key_version))
     }
 
-    async fn decrypt_dek(&self, encrypted_dek: &[u8], _key_version: i32) -> Result<Zeroizing<Vec<u8>>> {
+    async fn decrypt_dek(
+        &self,
+        encrypted_dek: &[u8],
+        _key_version: i32,
+    ) -> Result<Zeroizing<Vec<u8>>> {
         let ciphertext_str = std::str::from_utf8(encrypted_dek)
             .context("Vault ciphertext stored in BYTEA is not valid UTF-8")?;
 
@@ -189,12 +210,13 @@ impl LocalDevProvider {
             anyhow::bail!("LocalDevProvider cannot be used in ENVIRONMENT=production");
         }
 
-        tracing::warn!("KMS_PROVIDER=local: NOT for production use. Use aws or vault in production.");
+        tracing::warn!(
+            "KMS_PROVIDER=local: NOT for production use. Use aws or vault in production."
+        );
 
         let key_hex = std::env::var("LOCAL_KMS_KEY")
             .context("LOCAL_KMS_KEY must be set when KMS_PROVIDER=local")?;
-        let key_bytes = hex::decode(&key_hex)
-            .context("LOCAL_KMS_KEY is not valid hex")?;
+        let key_bytes = hex::decode(&key_hex).context("LOCAL_KMS_KEY is not valid hex")?;
         if key_bytes.len() != 32 {
             anyhow::bail!(
                 "LOCAL_KMS_KEY must be exactly 32 bytes (64 hex chars), got {}",
@@ -228,7 +250,11 @@ impl KeyProvider for LocalDevProvider {
         Ok((plaintext_dek, wrapped, self.key_version))
     }
 
-    async fn decrypt_dek(&self, encrypted_dek: &[u8], _key_version: i32) -> Result<Zeroizing<Vec<u8>>> {
+    async fn decrypt_dek(
+        &self,
+        encrypted_dek: &[u8],
+        _key_version: i32,
+    ) -> Result<Zeroizing<Vec<u8>>> {
         if encrypted_dek.len() < 12 {
             anyhow::bail!("LocalDevProvider: encrypted_dek too short to contain nonce");
         }
@@ -279,7 +305,10 @@ mod tests {
 
     fn setup_local_provider() -> LocalDevProvider {
         // 32 random-looking bytes as hex
-        std::env::set_var("LOCAL_KMS_KEY", "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
+        std::env::set_var(
+            "LOCAL_KMS_KEY",
+            "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",
+        );
         std::env::remove_var("ENVIRONMENT");
         LocalDevProvider::new(1).expect("LocalDevProvider::new should succeed")
     }
@@ -287,7 +316,10 @@ mod tests {
     #[tokio::test]
     async fn test_local_dev_generate_dek_returns_32_byte_plaintext() {
         let provider = setup_local_provider();
-        let (plaintext, encrypted, version) = provider.generate_dek().await.expect("generate_dek should succeed");
+        let (plaintext, encrypted, version) = provider
+            .generate_dek()
+            .await
+            .expect("generate_dek should succeed");
         assert_eq!(plaintext.len(), 32, "plaintext DEK must be 32 bytes");
         assert!(!encrypted.is_empty(), "encrypted DEK must not be empty");
         assert_eq!(version, 1);
@@ -297,17 +329,29 @@ mod tests {
     async fn test_local_dev_roundtrip() {
         let provider = setup_local_provider();
         let (plaintext, encrypted, _version) = provider.generate_dek().await.expect("generate_dek");
-        let recovered = provider.decrypt_dek(&encrypted, 1).await.expect("decrypt_dek");
-        assert_eq!(*plaintext, *recovered, "round-trip must recover original DEK");
+        let recovered = provider
+            .decrypt_dek(&encrypted, 1)
+            .await
+            .expect("decrypt_dek");
+        assert_eq!(
+            *plaintext, *recovered,
+            "round-trip must recover original DEK"
+        );
     }
 
     #[test]
     fn test_local_dev_fails_in_production() {
         std::env::set_var("ENVIRONMENT", "production");
-        std::env::set_var("LOCAL_KMS_KEY", "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
+        std::env::set_var(
+            "LOCAL_KMS_KEY",
+            "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",
+        );
         let result = LocalDevProvider::new(1);
         std::env::remove_var("ENVIRONMENT");
-        assert!(result.is_err(), "LocalDevProvider must refuse ENVIRONMENT=production");
+        assert!(
+            result.is_err(),
+            "LocalDevProvider must refuse ENVIRONMENT=production"
+        );
         assert!(result.unwrap_err().to_string().contains("production"));
     }
 

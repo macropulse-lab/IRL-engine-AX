@@ -2,18 +2,17 @@ pub mod asset;
 pub mod audit;
 pub mod auth;
 pub mod backfill;
-pub mod middleware;
-pub mod tls;
 pub mod binding;
-pub mod encryption;
 pub mod config;
 pub mod db;
+pub mod encryption;
 pub mod errors;
 pub mod gdpr;
-pub mod kms;
 pub mod heartbeat;
+pub mod kms;
 pub mod merkle;
 pub mod metrics;
+pub mod middleware;
 pub mod mta;
 pub mod openapi;
 pub mod policy;
@@ -24,6 +23,7 @@ pub mod seal;
 pub mod shadow_mode;
 pub mod snapshot;
 pub mod time;
+pub mod tls;
 pub mod token_manager;
 pub mod verifier;
 
@@ -111,10 +111,7 @@ pub fn build_router(state: AppState) -> Router {
             "/irl/admin/shadow-mode",
             post(routes::admin::shadow_mode_set),
         )
-        .route(
-            "/irl/admin/audit-log",
-            get(routes::admin::audit_log_query),
-        )
+        .route("/irl/admin/audit-log", get(routes::admin::audit_log_query))
         .route(
             "/irl/admin/gdpr-erase/:agent_id",
             post(routes::admin::gdpr_erase_handler),

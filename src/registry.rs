@@ -82,8 +82,9 @@ pub async fn authorize_agent(
     }
 
     // 2. Model hash must match
-    let registered_hash = hex::decode(&profile.model_hash_hex)
-        .map_err(|_| AppError::Serialization("Corrupted model_hash_hex in agent registry".into()))?;
+    let registered_hash = hex::decode(&profile.model_hash_hex).map_err(|_| {
+        AppError::Serialization("Corrupted model_hash_hex in agent registry".into())
+    })?;
     if registered_hash != observed_model_hash.as_ref() {
         return Err(AppError::Policy(PolicyError::ModelHashMismatch));
     }

@@ -26,8 +26,17 @@ pub async fn bind_execution(
 ) -> Result<Json<serde_json::Value>, AppError> {
     // Fetch authorized intent fields for reconciliation.
     // Also returns current verification_status so we can enforce idempotency.
-    let (reasoning_hash, intent_asset, intent_action, intent_quantity, current_status, agent_id, intent_venue, intent_currency, intent_multiplier) =
-        db::get_intent_for_binding(&state.pool, req.trace_id).await?;
+    let (
+        reasoning_hash,
+        intent_asset,
+        intent_action,
+        intent_quantity,
+        current_status,
+        agent_id,
+        intent_venue,
+        intent_currency,
+        intent_multiplier,
+    ) = db::get_intent_for_binding(&state.pool, req.trace_id).await?;
 
     // Idempotency guard: only PENDING traces may be bound.
     // Re-binding a MATCHED/DIVERGENT/EXPIRED trace would overwrite the final_proof

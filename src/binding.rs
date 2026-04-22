@@ -146,10 +146,7 @@ pub fn reconcile(
     // Use exchange-reported fill time if supplied; fall back to IRL wall clock.
     let execution_time = req
         .execution_time_ms
-        .and_then(|ms| {
-            chrono::TimeZone::timestamp_millis_opt(&Utc, ms)
-                .single()
-        })
+        .and_then(|ms| chrono::TimeZone::timestamp_millis_opt(&Utc, ms).single())
         .unwrap_or_else(Utc::now);
 
     // 1. Asset mismatch check — uses alias map so "AAPL" matches "AAPL.USD" etc.

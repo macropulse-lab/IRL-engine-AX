@@ -8,8 +8,8 @@ use crate::registry;
 use crate::seal;
 use crate::snapshot::{
     self, AgentBlock, AuthorizeRequest, BiTemporalBlock, CognitiveSnapshot, ExecutionBlock,
-    ExecutionIntent, HeartbeatBlock, IntegrityBlock, MtaBlock, PolicyBlock, RegulatoryBlock,
-    ReasoningTrace, TradeAction,
+    ExecutionIntent, HeartbeatBlock, IntegrityBlock, MtaBlock, PolicyBlock, ReasoningTrace,
+    RegulatoryBlock, TradeAction,
 };
 use crate::time::now_ms;
 use crate::AppState;

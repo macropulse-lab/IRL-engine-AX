@@ -356,7 +356,8 @@ impl MtaClient for MockMtaClient {
             hash: "mock0000000000000000000000000000000000000000000000000000000000000000"
                 .to_string(),
             broadcast_time: chrono::Utc::now().timestamp_millis() - 50,
-            pubkey_fingerprint: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+            pubkey_fingerprint: "0000000000000000000000000000000000000000000000000000000000000000"
+                .to_string(),
             signal_mode: "mock".to_string(),
         })
     }
@@ -395,7 +396,8 @@ impl MtaClient for NullMtaClient {
             hash: "none0000000000000000000000000000000000000000000000000000000000000000"
                 .to_string(),
             broadcast_time: chrono::Utc::now().timestamp_millis(),
-            pubkey_fingerprint: "0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+            pubkey_fingerprint: "0000000000000000000000000000000000000000000000000000000000000000"
+                .to_string(),
             signal_mode: "none".to_string(),
         })
     }
@@ -419,7 +421,8 @@ pub fn mock_mta(
         version: "test-v1".to_string(),
         hash: "0xmockhash".to_string(),
         broadcast_time: chrono::Utc::now().timestamp_millis() - 50,
-        pubkey_fingerprint: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".to_string(),
+        pubkey_fingerprint: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            .to_string(),
         signal_mode: "mock".to_string(),
     }
 }
@@ -451,7 +454,8 @@ mod custom_mta_tests {
                 hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                     .to_string(),
                 broadcast_time: chrono::Utc::now().timestamp_millis() - 100,
-                pubkey_fingerprint: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".to_string(),
+                pubkey_fingerprint:
+                    "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".to_string(),
                 signal_mode: "live".to_string(),
             })
         }
@@ -502,13 +506,20 @@ mod custom_mta_tests {
             !state.pubkey_fingerprint.is_empty(),
             "pubkey_fingerprint must be populated"
         );
-        assert_eq!(state.pubkey_fingerprint.len(), 64, "fingerprint must be 64 hex chars");
+        assert_eq!(
+            state.pubkey_fingerprint.len(),
+            64,
+            "fingerprint must be 64 hex chars"
+        );
     }
 
     #[tokio::test]
     async fn firm_mta_pubkey_fingerprint_is_populated() {
         // MTA-02: custom operator MtaState carries a unique pubkey fingerprint.
-        let client = FirmInternalMta { regime_id: 1, regime_label: "test" };
+        let client = FirmInternalMta {
+            regime_id: 1,
+            regime_label: "test",
+        };
         let state = client.fetch_verified().await.unwrap();
         assert_eq!(state.pubkey_fingerprint.len(), 64);
         // Firm's fingerprint is distinct from MockMtaClient's (all-zeros)

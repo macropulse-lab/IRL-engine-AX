@@ -647,7 +647,10 @@ async fn audit_log_creates_entry_on_agent_register() {
             .unwrap(),
     )
     .await;
-    assert!(reg["agent_id"].is_string(), "agent registration should succeed");
+    assert!(
+        reg["agent_id"].is_string(),
+        "agent registration should succeed"
+    );
 
     // Verify audit log entry exists in DB
     let count: i64 = sqlx::query_scalar(
@@ -657,7 +660,10 @@ async fn audit_log_creates_entry_on_agent_register() {
     .await
     .unwrap_or(0);
 
-    assert!(count >= 1, "audit log must have at least one agent.register entry");
+    assert!(
+        count >= 1,
+        "audit log must have at least one agent.register entry"
+    );
 }
 
 #[tokio::test]
@@ -674,8 +680,16 @@ async fn token_issue_endpoint_exists() {
         .await
         .unwrap();
     // 201 (owner token) or 403 (client token) — either is acceptable; endpoint must exist (not 404)
-    assert_ne!(resp.status(), StatusCode::NOT_FOUND, "token issue endpoint must exist");
-    assert_ne!(resp.status(), StatusCode::METHOD_NOT_ALLOWED, "POST must be accepted");
+    assert_ne!(
+        resp.status(),
+        StatusCode::NOT_FOUND,
+        "token issue endpoint must exist"
+    );
+    assert_ne!(
+        resp.status(),
+        StatusCode::METHOD_NOT_ALLOWED,
+        "POST must be accepted"
+    );
 }
 
 // ── Phase 5: GDPR erasure ──────────────────────────────────────────────────────
@@ -869,7 +883,11 @@ async fn gdpr_erase() {
 
     assert_eq!(resp.status(), StatusCode::OK, "GDPR erase must return 200");
     let body = body_json(resp).await;
-    assert_eq!(body["traces_erased"].as_u64().unwrap_or(0), 1, "must report 1 erased trace");
+    assert_eq!(
+        body["traces_erased"].as_u64().unwrap_or(0),
+        1,
+        "must report 1 erased trace"
+    );
     assert_eq!(body["status"], "erased", "status must be 'erased'");
     assert!(
         body["gdpr_request_id"].as_str().is_some(),
@@ -885,8 +903,7 @@ async fn gdpr_erase_hash_preserved() {
         return;
     };
 
-    let (app, agent_id, _trace_id, pre_erasure_hash) =
-        seed_agent_and_trace(app, &pool).await;
+    let (app, agent_id, _trace_id, pre_erasure_hash) = seed_agent_and_trace(app, &pool).await;
 
     // Erase
     let erase_resp = body_json(

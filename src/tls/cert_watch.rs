@@ -8,11 +8,7 @@ use std::time::Duration;
 ///
 /// Uses `spawn_blocking` for the notify sync channel to avoid blocking
 /// the async runtime.
-pub async fn spawn_cert_watcher(
-    tls_config: RustlsConfig,
-    cert_path: PathBuf,
-    key_path: PathBuf,
-) {
+pub async fn spawn_cert_watcher(tls_config: RustlsConfig, cert_path: PathBuf, key_path: PathBuf) {
     let cert_path_for_watcher = cert_path.clone();
     let key_path_for_watcher = key_path.clone();
 
@@ -27,17 +23,11 @@ pub async fn spawn_cert_watcher(
         };
 
         if let Err(e) = watcher.watch(&cert_path_for_watcher, RecursiveMode::NonRecursive) {
-            tracing::error!(
-                "Failed to watch cert file {:?}: {e}",
-                cert_path_for_watcher
-            );
+            tracing::error!("Failed to watch cert file {:?}: {e}", cert_path_for_watcher);
             return;
         }
         if let Err(e) = watcher.watch(&key_path_for_watcher, RecursiveMode::NonRecursive) {
-            tracing::error!(
-                "Failed to watch key file {:?}: {e}",
-                key_path_for_watcher
-            );
+            tracing::error!("Failed to watch key file {:?}: {e}", key_path_for_watcher);
             return;
         }
 
@@ -50,9 +40,7 @@ pub async fn spawn_cert_watcher(
         loop {
             match rx.recv() {
                 Ok(Ok(event)) if event.kind.is_modify() || event.kind.is_create() => {
-                    tracing::info!(
-                        "Cert file changed, debouncing 150ms then reloading TLS config"
-                    );
+                    tracing::info!("Cert file changed, debouncing 150ms then reloading TLS config");
                     std::thread::sleep(Duration::from_millis(150));
                     let config = tls_config.clone();
                     let cp = cert_path.clone();

@@ -275,7 +275,10 @@ mod tests {
 
         let now = chrono::Utc::now().timestamp_millis() as u64;
         let hb = make_heartbeat(&signing_key, 1, now);
-        assert!(validator.validate(&hb, Uuid::nil(), &cfg, None).await.is_ok());
+        assert!(validator
+            .validate(&hb, Uuid::nil(), &cfg, None)
+            .await
+            .is_ok());
     }
 
     #[tokio::test]
@@ -286,7 +289,10 @@ mod tests {
 
         let now = chrono::Utc::now().timestamp_millis() as u64;
         let hb1 = make_heartbeat(&signing_key, 5, now);
-        validator.validate(&hb1, Uuid::nil(), &cfg, None).await.unwrap();
+        validator
+            .validate(&hb1, Uuid::nil(), &cfg, None)
+            .await
+            .unwrap();
 
         let hb2 = make_heartbeat(&signing_key, 3, now); // seq 3 < 5
         assert!(matches!(
@@ -340,7 +346,10 @@ mod tests {
 
         // Agent A accepts seq 10.
         let hb_a = make_heartbeat(&signing_key, 10, now);
-        validator.validate(&hb_a, agent_a, &cfg, None).await.unwrap();
+        validator
+            .validate(&hb_a, agent_a, &cfg, None)
+            .await
+            .unwrap();
 
         // Agent B starts fresh — seq 5 is valid (independent counter).
         let hb_b = make_heartbeat(&signing_key, 5, now);

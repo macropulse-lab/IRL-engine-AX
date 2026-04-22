@@ -24,7 +24,11 @@ pub struct EncryptedBlob {
 /// # Panics
 /// Panics if `dek` is not exactly 32 bytes.
 pub fn encrypt_trace(plaintext: &[u8], dek: &[u8]) -> anyhow::Result<EncryptedBlob> {
-    assert_eq!(dek.len(), 32, "DEK must be exactly 32 bytes for AES-256-GCM");
+    assert_eq!(
+        dek.len(),
+        32,
+        "DEK must be exactly 32 bytes for AES-256-GCM"
+    );
 
     let key = Key::<Aes256Gcm>::from_slice(dek);
     let cipher = Aes256Gcm::new(key);
@@ -50,7 +54,11 @@ pub fn encrypt_trace(plaintext: &[u8], dek: &[u8]) -> anyhow::Result<EncryptedBl
 /// # Errors
 /// Returns `Err` if the nonce is not 12 bytes, or if decryption fails (tag mismatch).
 pub fn decrypt_trace(ciphertext: &[u8], nonce: &[u8], dek: &[u8]) -> anyhow::Result<Vec<u8>> {
-    assert_eq!(dek.len(), 32, "DEK must be exactly 32 bytes for AES-256-GCM");
+    assert_eq!(
+        dek.len(),
+        32,
+        "DEK must be exactly 32 bytes for AES-256-GCM"
+    );
 
     if nonce.len() != 12 {
         anyhow::bail!("Nonce must be exactly 12 bytes, got {}", nonce.len());
@@ -157,7 +165,10 @@ mod tests {
         corrupted[0] ^= 0xFF;
 
         let result = decrypt_trace(&corrupted, &blob.nonce, &dek);
-        assert!(result.is_err(), "decryption of corrupted ciphertext must fail");
+        assert!(
+            result.is_err(),
+            "decryption of corrupted ciphertext must fail"
+        );
     }
 
     #[test]
@@ -189,8 +200,7 @@ mod tests {
     fn test_jsonb_wrapper_roundtrip() {
         let original = b"raw ciphertext for jsonb test 0123456789";
         let wrapped = wrap_ciphertext_for_jsonb(original);
-        let recovered =
-            extract_ciphertext_from_jsonb(&wrapped).expect("extraction should succeed");
+        let recovered = extract_ciphertext_from_jsonb(&wrapped).expect("extraction should succeed");
 
         assert_eq!(recovered, original);
     }
