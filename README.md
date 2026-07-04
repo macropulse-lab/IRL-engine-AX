@@ -1,3 +1,12 @@
+<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/brand/logo-mono.svg">
+  <img src=".github/brand/logo-green.svg" alt="MacroPulse" width="72" height="72">
+</picture>
+
+<sub>Part of the <a href="https://github.com/GabrielGauss/macropulse-platform">MacroPulse platform</a></sub>
+</div>
+
 [![CI](https://github.com/GabrielGauss/IRL-engine-AX/actions/workflows/ci.yml/badge.svg)](https://github.com/GabrielGauss/IRL-engine-AX/actions/workflows/ci.yml)
 ![version](https://img.shields.io/badge/version-v1.2.0-0a0a0a?style=flat-square)
 ![rust edition](https://img.shields.io/badge/rust-2021_edition-b7410e?style=flat-square&logo=rust)
@@ -295,3 +304,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports and feature requests via [Gi
 MIT. See [LICENSE](LICENSE).
 
 Commercial licensing, enterprise deployment, and custom MTA integration support: hello@macropulse.live
+
+---
+
+<div align="center">
+<sub>Part of the <a href="https://github.com/GabrielGauss/macropulse-platform">MacroPulse platform</a> · <a href="https://macropulse.live">macropulse.live</a> · <a href="https://macropulse.live/irl">IRL Engine</a></sub>
+</div>
