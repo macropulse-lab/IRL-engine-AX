@@ -150,12 +150,12 @@ const LANDING_HTML: &str = r#"<!DOCTYPE html>
 
 <nav>
   <div class="nav-brand">
-    <div class="nav-dot"></div>
+    <svg width="20" height="20" viewBox="0 0 100 100" fill="none" style="flex-shrink:0" aria-label="MacroPulse"><defs><clipPath id="sb-cr"><circle cx="54" cy="50" r="32"/></clipPath><mask id="sb-lmr"><circle cx="44" cy="50" r="32" fill='#fff'/><circle cx="54" cy="50" r="32" fill='#000'/></mask></defs><g fill='#3fb85a'><g mask="url(#sb-lmr)"><rect x="0" y="13.5" width="100" height="4.9"/><rect x="0" y="22.5" width="100" height="4.9"/><rect x="0" y="31.5" width="100" height="4.9"/><rect x="0" y="40.5" width="100" height="4.9"/><rect x="0" y="49.5" width="100" height="4.9"/><rect x="0" y="58.5" width="100" height="4.9"/><rect x="0" y="67.5" width="100" height="4.9"/><rect x="0" y="76.5" width="100" height="4.9"/><rect x="0" y="85.5" width="100" height="4.9"/></g><g clip-path="url(#sb-cr)"><rect x="0" y="9.0" width="100" height="4.9"/><rect x="0" y="18.0" width="100" height="4.9"/><rect x="0" y="27.0" width="100" height="4.9"/><rect x="0" y="36.0" width="100" height="4.9"/><rect x="0" y="45.0" width="100" height="4.9"/><rect x="0" y="54.0" width="100" height="4.9"/><rect x="0" y="63.0" width="100" height="4.9"/><rect x="0" y="72.0" width="100" height="4.9"/><rect x="0" y="81.0" width="100" height="4.9"/><rect x="0" y="90.0" width="100" height="4.9"/></g></g></svg>
     MacroPulse · <strong>IRL Engine</strong>
   </div>
   <div class="nav-links">
-    <a href="https://macropulse.live/irl.html">IRL Overview</a>
-    <a href="https://macropulse.live/irl-whitepaper.html">Whitepaper</a>
+    <a href="https://macropulse.live/irl">IRL Overview</a>
+    <a href="https://macropulse.live/irl-whitepaper">Whitepaper</a>
     <a href="https://github.com/GabrielGauss/irl-public-docs">Docs</a>
     <a href="/swagger-ui/" class="primary">Open Swagger UI →</a>
   </div>
@@ -259,13 +259,13 @@ const LANDING_HTML: &str = r#"<!DOCTYPE html>
         <p>Liveness probe. No auth required. Returns <span class="mono" style="font-size:0.75rem">{"status":"ok"}</span>.</p>
         <div class="card-path">/irl/health</div>
       </a>
-      <a class="card" href="https://macropulse.live/irl.html" target="_blank" rel="noopener">
+      <a class="card" href="https://macropulse.live/irl" target="_blank" rel="noopener">
         <div class="card-method">Overview</div>
         <h3>IRL Overview &amp; Pricing</h3>
         <p>Product overview, editions, pricing, and regulatory mapping.</p>
         <div class="card-path">macropulse.live/irl</div>
       </a>
-      <a class="card" href="https://macropulse.live/irl-whitepaper.html" target="_blank" rel="noopener">
+      <a class="card" href="https://macropulse.live/irl-whitepaper" target="_blank" rel="noopener">
         <div class="card-method">Whitepaper</div>
         <h3>Protocol Specification</h3>
         <p>Full cryptographic design, bitemporal model, audit chain, regulatory mapping.</p>
@@ -314,8 +314,8 @@ const LANDING_HTML: &str = r#"<!DOCTYPE html>
 <footer>
   <span class="footer-brand">IRL Engine · MacroPulse Research · irl.macropulse.live</span>
   <div class="footer-links">
-    <a href="https://macropulse.live/irl.html">IRL Overview</a>
-    <a href="https://macropulse.live/irl-whitepaper.html">Whitepaper</a>
+    <a href="https://macropulse.live/irl">IRL Overview</a>
+    <a href="https://macropulse.live/irl-whitepaper">Whitepaper</a>
     <a href="https://github.com/GabrielGauss/irl-public-docs">Public Docs</a>
     <a href="https://macropulse.live">MacroPulse</a>
   </div>
