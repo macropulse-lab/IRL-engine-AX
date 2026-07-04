@@ -36,13 +36,13 @@ const LANDING_HTML: &str = r##"<!DOCTYPE html>
 <link rel="icon" type="image/svg+xml" href="https://macropulse.live/favicon.svg">
 <meta property="og:title" content="IRL — Prove what your AI agent decided, before it trades">
 <meta property="og:description" content="Cryptographic pre-execution compliance for autonomous trading agents. Sealed before execution, anchored to Bitcoin, verifiable by anyone — without trusting us.">
-<meta property="og:image" content="https://macropulse.live/og-image.png">
+<meta property="og:image" content="https://macropulse.live/og-irl.png">
 <meta property="og:url" content="https://irl.macropulse.live/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="IRL — Prove what your AI agent decided, before it trades">
 <meta name="twitter:description" content="Pre-execution compliance for autonomous trading agents. Sealed, anchored to Bitcoin, verifiable offline.">
-<meta name="twitter:image" content="https://macropulse.live/og-image.png">
+<meta name="twitter:image" content="https://macropulse.live/og-irl.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
